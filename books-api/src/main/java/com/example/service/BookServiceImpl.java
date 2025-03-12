@@ -2,6 +2,7 @@ package com.example.service;
 
 import com.example.model.Book;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -162,22 +163,31 @@ public class BookServiceImpl implements BookService {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(
                 books.stream()
-                        .map(book -> Map.of(TITLE, book.getTitle(), AUTHOR, book.getAuthor().getName()))
-                        .collect(Collectors.toList())
+                        .map(book -> Map.of(
+                                ID, book.getId(),
+                                TITLE, book.getTitle(),
+                                AUTHOR_NAME, book.getAuthor().getName(),
+                                PAGES, book.getPages()
+                        )).toList()
         );
     }
 
 
     @Override
-    public void exportBooksToCsv(final List<Book> books, final String filePath) throws IOException {
+    public void exportBooksJsonToCsv(final String json, final String filePath) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> books = objectMapper.readValue(json, new TypeReference<>() {
+        });
+
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
                      .withHeader(ID, TITLE, AUTHOR_NAME, PAGES))) {
-            for (Book book : books) {
-                csvPrinter.printRecord(book.getId(), book.getTitle(), book.getAuthor().getName(), book.getPages());
+            for (Map<String, Object> book : books) {
+                csvPrinter.printRecord(book.get(ID), book.get(TITLE), book.get(AUTHOR_NAME), book.get(PAGES));
             }
         }
     }
+
 
     public void getTitleWithWordCountByAuthor(final Map<String, List<Book>> booksByAuthor) {
         booksByAuthor.forEach((author, booksList) -> {

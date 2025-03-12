@@ -38,7 +38,7 @@ public interface BookService {
 
     String generateJsonWithTitlesAndAuthors(final List<Book> books) throws JsonProcessingException, JsonProcessingException;
 
-    void exportBooksToCsv(final List<Book> books, final String filePath) throws IOException;
+    void exportBooksJsonToCsv(final String json, final String filePath) throws IOException;
 
     void getTitleWithWordCountByAuthor(final Map<String, List<Book>> booksByAuthor);
 }
